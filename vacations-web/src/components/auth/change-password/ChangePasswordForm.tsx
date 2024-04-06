@@ -56,7 +56,6 @@ const ChangePasswordForm = ({ onSubmit }: ChangePasswordFormProps) => {
 
     return (
         <FormProvider {...form}>
-            {/* <Form {...form}> */}
             <form onSubmit={form.handleSubmit(onSubmit)}>
                 <FormField
                     name='newPassword'
@@ -122,7 +121,6 @@ const ChangePasswordForm = ({ onSubmit }: ChangePasswordFormProps) => {
                     Login
                 </Button>
             </form>
-            {/* </Form> */}
         </FormProvider>
     );
 };

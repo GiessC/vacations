@@ -29,12 +29,16 @@ export interface LoginFormProps {
 }
 
 const schema: z.Schema<LoginFormValues> = z.object({
-    username: z.string({
-        required_error: 'Username is required.',
-    }),
-    password: z.string({
-        required_error: 'Password is required.',
-    }),
+    username: z
+        .string({
+            required_error: 'Username is required.',
+        })
+        .min(1, { message: 'Username is required.' }),
+    password: z
+        .string({
+            required_error: 'Password is required.',
+        })
+        .min(1, { message: 'Password is required.' }),
 });
 
 const LoginForm = ({ onSubmit }: LoginFormProps) => {
@@ -43,11 +47,14 @@ const LoginForm = ({ onSubmit }: LoginFormProps) => {
         mode: 'onBlur',
         resolver: zodResolver(schema),
     });
-    const { isLoading, isDirty, isValid, isSubmitting } = form.formState;
+    const { handleSubmit, formState } = form;
+    const { isLoading, isDirty, isValid, isSubmitting } = formState;
+
+    console.log(isLoading, isDirty, isValid, isSubmitting);
 
     return (
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)}>
+            <form onSubmit={handleSubmit(onSubmit)}>
                 <FormField
                     name='username'
                     defaultValue={defaultValues.username}
@@ -61,8 +68,8 @@ const LoginForm = ({ onSubmit }: LoginFormProps) => {
                                     <Input
                                         type='text'
                                         placeholder='Username'
-                                        {...field}
                                         required
+                                        {...field}
                                     />
                                 </FormControl>
                                 <FormDescription />
@@ -84,8 +91,8 @@ const LoginForm = ({ onSubmit }: LoginFormProps) => {
                                     <Input
                                         type='password'
                                         placeholder='Password'
-                                        {...field}
                                         required
+                                        {...field}
                                     />
                                 </FormControl>
                                 <FormDescription />

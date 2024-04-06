@@ -7,7 +7,14 @@ import {
     type IAuthenticationDetailsData,
     type ICognitoUserData,
 } from 'amazon-cognito-identity-js';
-import { PropsWithChildren, useMemo, useState } from 'react';
+import {
+    PropsWithChildren,
+    useCallback,
+    useEffect,
+    useMemo,
+    useState,
+} from 'react';
+import { useNavigate } from 'react-router-dom';
 import config from '../config/config';
 import NewPasswordRequiredChallenge from '../features/auth/challenges/NewPasswordRequiredChallenge';
 
@@ -77,7 +84,7 @@ const changePassword = (
 };
 
 const logout = (userPool: CognitoUserPool): Promise<void> => {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
         const user = userPool.getCurrentUser();
         if (user) {
             user.globalSignOut({
@@ -91,12 +98,14 @@ const logout = (userPool: CognitoUserPool): Promise<void> => {
                 },
             });
         }
-        reject(new Error('No user to sign out.'));
+        resolve();
     });
 };
 
 const AuthProvider = ({ children }: PropsWithChildren) => {
+    const navigate = useNavigate();
     const [user, setUser] = useState<CognitoUser | null>(null);
+    const [isValidating, setIsValidating] = useState<boolean>(true);
 
     const userPool = useMemo<CognitoUserPool>(() => {
         if (config.userPoolId || config.clientId) {
@@ -110,6 +119,8 @@ const AuthProvider = ({ children }: PropsWithChildren) => {
 
     const contextValue = useMemo<IAuthContext>(() => {
         return {
+            user,
+            isValidating,
             login: async (request: LoginRequest) => {
                 const response = await login(userPool, request);
                 setUser(response.user);
@@ -119,13 +130,80 @@ const AuthProvider = ({ children }: PropsWithChildren) => {
             },
             changePassword: (request: ChangePasswordRequest) =>
                 changePassword(request, user),
-            logout: () => logout(userPool),
+            logout: async () => {
+                await logout(userPool);
+                setUser(null);
+            },
         };
-    }, [user, userPool]);
+    }, [isValidating, user, userPool]);
+
+    const isValidSession = useCallback(
+        (user: CognitoUser): Promise<boolean> => {
+            if (!user) return Promise.resolve(false);
+            return new Promise((resolve, reject) => {
+                user.getSession(
+                    (
+                        error: Error | null,
+                        session: CognitoUserSession | null,
+                    ) => {
+                        if (error) {
+                            reject(error);
+                            return;
+                        }
+                        if (!session) {
+                            resolve(false);
+                            return;
+                        }
+                        resolve(session.isValid());
+                    },
+                );
+            });
+        },
+        [],
+    );
+
+    const tryGetUser = useCallback(() => {
+        const user = userPool.getCurrentUser();
+        if (user) {
+            return user;
+        }
+        return null;
+    }, [userPool]);
+
+    const onUnauthenticated = useCallback(() => {
+        navigate('/auth/login');
+    }, [navigate]);
+
+    const onAuthenticated = useCallback(() => {
+        navigate('/');
+    }, [navigate]);
+
+    useEffect(() => {
+        setIsValidating(true);
+
+        const validateSession = async () => {
+            const currentUser = user ?? tryGetUser();
+            if (!currentUser) {
+                onUnauthenticated();
+                return;
+            }
+            const isValid = await isValidSession(currentUser);
+            setUser(currentUser);
+            if (!isValid) {
+                onUnauthenticated();
+                return;
+            }
+            onAuthenticated();
+        };
+
+        validateSession().finally(() => {
+            setIsValidating(false);
+        });
+    }, [isValidSession, onAuthenticated, onUnauthenticated, tryGetUser, user]);
 
     return (
         <AuthContext.Provider value={contextValue}>
-            {children}
+            {isValidating ? <div>Validating session...</div> : children}
         </AuthContext.Provider>
     );
 };

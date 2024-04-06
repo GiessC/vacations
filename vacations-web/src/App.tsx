@@ -1,13 +1,18 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
-import Providers from './Providers';
+import Layout from './Layout';
+import Home from './pages/Home';
 import ChangePassword from './pages/auth/change-password/ChangePassword';
 import Login from './pages/auth/login/Login';
 
 const App = () => {
     return (
         <BrowserRouter>
-            <Providers>
+            <Layout>
                 <Routes>
+                    <Route
+                        path='/'
+                        element={<Home />}
+                    />
                     <Route
                         path='/auth/login'
                         element={<Login />}
@@ -17,7 +22,7 @@ const App = () => {
                         element={<ChangePassword />}
                     />
                 </Routes>
-            </Providers>
+            </Layout>
         </BrowserRouter>
     );
 };
