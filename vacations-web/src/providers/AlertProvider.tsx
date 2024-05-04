@@ -67,18 +67,22 @@ const AlertProvider = ({ children }: PropsWithChildren) => {
     return (
         <AlertContext.Provider value={contextValue}>
             {children}
-            {alerts.map((alert: IAlert) => (
-                <Alert
-                    key={alert.id}
-                    variant={
-                        alert.severity === 'error' ? 'destructive' : 'default'
-                    }
-                >
-                    {alert.icon}
-                    <AlertTitle>{alert.title}</AlertTitle>
-                    <AlertDescription>{alert.message}</AlertDescription>
-                </Alert>
-            ))}
+            <div className='flex flex-col space-y-2 absolute left-4 bottom-4 w-96 h-auto'>
+                {alerts.map((alert: IAlert) => (
+                    <Alert
+                        key={alert.id}
+                        variant={
+                            alert.severity === 'error'
+                                ? 'destructive'
+                                : 'default'
+                        }
+                    >
+                        {alert.icon}
+                        <AlertTitle>{alert.title}</AlertTitle>
+                        <AlertDescription>{alert.message}</AlertDescription>
+                    </Alert>
+                ))}
+            </div>
         </AlertContext.Provider>
     );
 };

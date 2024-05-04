@@ -1,8 +1,8 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import Layout from './Layout';
-import Home from './pages/Home';
 import ChangePassword from './pages/auth/change-password/ChangePassword';
 import Login from './pages/auth/login/Login';
+import Home from './pages/index/Home';
 
 const App = () => {
     return (

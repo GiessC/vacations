@@ -1,18 +1,8 @@
-import { Button } from '@/components/ui/button';
-import {
-    Form,
-    FormControl,
-    FormDescription,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { ControllerRenderProps } from '@/helpers/react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { FieldValues, SubmitHandler, useForm } from 'react-hook-form';
+import { Form } from '@/components/ui/form';
+import { defaultFormConfig } from '@/helpers/forms/defaultFormConfig';
+import { useForm, type FieldValues, type SubmitHandler } from 'react-hook-form';
 import { z } from 'zod';
+import LoginFormView from './LoginFormView';
 
 export interface LoginFormValues extends FieldValues {
     username: string;
@@ -29,84 +19,23 @@ export interface LoginFormProps {
 }
 
 const schema: z.Schema<LoginFormValues> = z.object({
-    username: z
-        .string({
-            required_error: 'Username is required.',
-        })
-        .min(1, { message: 'Username is required.' }),
-    password: z
-        .string({
-            required_error: 'Password is required.',
-        })
-        .min(1, { message: 'Password is required.' }),
+    username: z.string().min(1),
+    password: z.string().min(1),
 });
 
 const LoginForm = ({ onSubmit }: LoginFormProps) => {
-    const form = useForm<LoginFormValues>({
-        defaultValues,
-        mode: 'onBlur',
-        resolver: zodResolver(schema),
-    });
-    const { handleSubmit, formState } = form;
-    const { isLoading, isDirty, isValid, isSubmitting } = formState;
-
-    console.log(isLoading, isDirty, isValid, isSubmitting);
+    const form = useForm<LoginFormValues>(
+        defaultFormConfig(schema, defaultValues),
+    );
+    const { handleSubmit } = form;
 
     return (
         <Form {...form}>
-            <form onSubmit={handleSubmit(onSubmit)}>
-                <FormField
-                    name='username'
-                    defaultValue={defaultValues.username}
-                    render={({
-                        field,
-                    }: ControllerRenderProps<LoginFormValues, 'username'>) => {
-                        return (
-                            <FormItem>
-                                <FormLabel />
-                                <FormControl>
-                                    <Input
-                                        type='text'
-                                        placeholder='Username'
-                                        required
-                                        {...field}
-                                    />
-                                </FormControl>
-                                <FormDescription />
-                                <FormMessage />
-                            </FormItem>
-                        );
-                    }}
-                />
-                <FormField
-                    name='password'
-                    defaultValue={defaultValues.password}
-                    render={({
-                        field,
-                    }: ControllerRenderProps<LoginFormValues, 'password'>) => {
-                        return (
-                            <FormItem>
-                                <FormLabel />
-                                <FormControl>
-                                    <Input
-                                        type='password'
-                                        placeholder='Password'
-                                        required
-                                        {...field}
-                                    />
-                                </FormControl>
-                                <FormDescription />
-                                <FormMessage />
-                            </FormItem>
-                        );
-                    }}
-                />
-                <Button
-                    type='submit'
-                    disabled={!isDirty || !isValid || isLoading || isSubmitting}
-                >
-                    Login
-                </Button>
+            <form
+                className='space-y-8'
+                onSubmit={handleSubmit(onSubmit)}
+            >
+                <LoginFormView form={form} />
             </form>
         </Form>
     );
