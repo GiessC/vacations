@@ -64,9 +64,9 @@ const AlertProvider = ({ children }: PropsWithChildren) => {
         };
     }, []);
 
+    // TODO: This isn't appearing over everything (at least not Create album dialog)
     return (
         <AlertContext.Provider value={contextValue}>
-            {children}
             <div className='flex flex-col space-y-2 absolute left-4 bottom-4 w-96 h-auto'>
                 {alerts.map((alert: IAlert) => (
                     <Alert
@@ -83,6 +83,7 @@ const AlertProvider = ({ children }: PropsWithChildren) => {
                     </Alert>
                 ))}
             </div>
+            {children}
         </AlertContext.Provider>
     );
 };

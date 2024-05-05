@@ -1,10 +1,8 @@
 package main
 
 import (
-	"log"
-	"os"
-
 	"github.com/giessc/vacations/startup"
+	"github.com/giessc/vacations/startup/config"
 	"github.com/joho/godotenv"
 	"go.uber.org/dig"
 )
@@ -17,26 +15,22 @@ func loadEnvVars(environment string) {
 }
 
 func main() {
-	err := godotenv.Load(".env.local", ".env.development", ".env.production")
-	if err != nil {
-		panic(err)
-	}
+	config.LoadConfig()
 
-	environment := os.Getenv("VACATIONS_ENV")
+	environment := config.AppConfig.Environment
 	if environment == "" {
 		environment = "development"
 	}
 
 	loadEnvVars(environment)
-	cognitoJwkUrl := os.Getenv("COGNITO_JWK_URL")
 
-	jwkKeySet := startup.GetJwkKeySet(cognitoJwkUrl)
-
-	log.Printf("JWK Key Set: %s", jwkKeySet)
-
-	region := os.Getenv("AWS_REGION")
+	region := config.AppConfig.AwsRegion
 	cfg := startup.ConfigAws(region)
 
 	container := dig.New()
 	startup.AddAwsServices(*container, cfg)
+	startup.AddRepositories(*container)
+	startup.AddProviders(*container)
+
+	startup.RegisterApi(container)
 }

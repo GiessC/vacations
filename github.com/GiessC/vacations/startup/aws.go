@@ -2,11 +2,11 @@ package startup
 
 import (
 	"context"
-	"fmt"
 	"log"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"go.uber.org/dig"
 )
@@ -24,9 +24,25 @@ func ConfigAws(region string) aws.Config {
 	return cfg
 }
 
-func AddAwsServices(container dig.Container, cfg aws.Config) {
-	// TODO: Add services here
-	s3Client := s3.NewFromConfig(cfg)
+func registerS3(cfg aws.Config) func() *s3.Client {
+	return func() *s3.Client {
+		return s3.NewFromConfig(cfg)
+	}
+}
 
-	fmt.Printf(s3Client.Options().AppID)
+func registerDynamoDB(cfg aws.Config) func() *dynamodb.Client {
+	return func() *dynamodb.Client {
+		return dynamodb.NewFromConfig(cfg)
+	}
+}
+
+func AddAwsServices(container dig.Container, cfg aws.Config) {
+	if err := container.Provide(registerS3(cfg)); err != nil {
+		log.Fatalf("Unable to provide s3 client: %v", err)
+		panic(err)
+	}
+	if err := container.Provide(registerDynamoDB(cfg)); err != nil {
+		log.Fatalf("Unable to provide DynamoDB client: %v", err)
+		panic(err)
+	}
 }

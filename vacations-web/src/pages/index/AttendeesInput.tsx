@@ -52,9 +52,10 @@ const AttendeesInput = (
     };
 
     return (
-        <>
+        <div className='flex flex-col space-y-2'>
             {value.map((_: string, index: number) => (
                 <AttendeeNameInput
+                    key={index}
                     index={index}
                     {...field}
                 />
@@ -65,7 +66,7 @@ const AttendeesInput = (
             >
                 Add Attendee
             </Button>
-        </>
+        </div>
     );
 };
 

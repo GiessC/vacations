@@ -7,7 +7,7 @@ export const defaultFormConfig = <TFormValues extends FieldValues>(
     defaultValues?: DefaultValues<TFormValues> | undefined,
 ): UseFormProps<TFormValues> => ({
     defaultValues,
-    mode: 'onBlur',
+    mode: 'onTouched',
     reValidateMode: 'onChange',
     resolver: zodResolver(schema),
 });

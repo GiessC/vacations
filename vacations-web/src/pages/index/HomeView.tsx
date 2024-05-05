@@ -1,14 +1,11 @@
-import IAlbum from '@/features/albums/IAlbum';
-import Albums from './Albums';
+import Albums, { AlbumsProps } from './Albums';
 
-export interface HomeViewProps {
-    albums: IAlbum[];
-}
+export interface HomeViewProps extends AlbumsProps {}
 
-const HomeView = ({ albums }: HomeViewProps) => {
+const HomeView = (props: HomeViewProps) => {
     return (
-        <div className='m-auto w-1/2'>
-            <Albums albums={albums} />
+        <div className='m-auto w-1/2 min-h-full'>
+            <Albums {...props} />
         </div>
     );
 };

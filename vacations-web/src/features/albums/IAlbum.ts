@@ -1,7 +1,8 @@
 export default interface IAlbum {
-    id: number;
+    albumId: string;
+    albumSlug: string;
     name: string;
     description?: string;
-    attendees: string[];
-    coverUrl?: string;
+    attendeeNames: string[];
+    coverFileExtension?: string;
 }

@@ -6,55 +6,28 @@ import {
     FormLabel,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { defaultFormConfig } from '@/helpers/forms/defaultFormConfig';
 import FormErrorMessage from '@/helpers/forms/form-views/FormErrorMessage';
 import { ControllerRenderProps } from '@/helpers/react-hook-form';
-import { FieldValues, SubmitHandler, useForm } from 'react-hook-form';
-import { z } from 'zod';
+import { SubmitHandler, UseFormReturn } from 'react-hook-form';
 import AttendeesInput from './AttendeesInput';
-
-export interface CreateAlbumValues extends FieldValues {
-    name: string;
-    description?: string;
-    attendees: string[];
-    cover: File | null; // This should be an image from file upload
-}
+import { Progress } from '@/components/ui/progress';
+import { CreateAlbumValues } from './CreateAlbumDialog';
 
 export interface CreateAlbumFormProps {
+    form: UseFormReturn<CreateAlbumValues>;
     formId: string;
     onSubmit: SubmitHandler<CreateAlbumValues>;
+    progress: number;
 }
 
-const schema = z.object({
-    name: z.string().min(1, { message: 'Name is required.' }),
-    description: z.string().optional(),
-    attendees: z
-        .array(z.string())
-        .min(1, { message: 'At least one attendee is required.' })
-        .refine(
-            (attendees: string[]) => {
-                return attendees.every(
-                    (attendee) => attendee.trim().length > 0,
-                );
-            },
-            { message: 'Attendee names cannot be empty.' },
-        ),
-    cover: z.instanceof(File).nullable(),
-});
-
-const DEFAULT_VALUES: CreateAlbumValues = {
-    name: '',
-    description: '',
-    attendees: [''],
-    cover: null,
-};
-
-const CreateAlbumForm = ({ formId, onSubmit }: CreateAlbumFormProps) => {
-    const form = useForm<CreateAlbumValues>(
-        defaultFormConfig<CreateAlbumValues>(schema, DEFAULT_VALUES),
-    );
+const CreateAlbumForm = ({
+    form,
+    formId,
+    onSubmit,
+    progress,
+}: CreateAlbumFormProps) => {
     const { handleSubmit, control, formState } = form;
-    const { errors } = formState;
+    const { defaultValues, errors } = formState;
 
     return (
         <Form {...form}>
@@ -65,7 +38,7 @@ const CreateAlbumForm = ({ formId, onSubmit }: CreateAlbumFormProps) => {
                 <FormField
                     name='name'
                     control={control}
-                    defaultValue={DEFAULT_VALUES.name}
+                    defaultValue={defaultValues?.name}
                     render={({
                         field,
                     }: ControllerRenderProps<CreateAlbumValues, 'name'>) => {
@@ -86,7 +59,7 @@ const CreateAlbumForm = ({ formId, onSubmit }: CreateAlbumFormProps) => {
                 <FormField
                     name='description'
                     control={control}
-                    defaultValue={DEFAULT_VALUES.description}
+                    defaultValue={defaultValues?.description}
                     render={({
                         field,
                     }: ControllerRenderProps<
@@ -110,7 +83,6 @@ const CreateAlbumForm = ({ formId, onSubmit }: CreateAlbumFormProps) => {
                 <FormField
                     name='attendees'
                     control={control}
-                    defaultValue={DEFAULT_VALUES.attendees}
                     render={({
                         field,
                     }: ControllerRenderProps<
@@ -131,11 +103,12 @@ const CreateAlbumForm = ({ formId, onSubmit }: CreateAlbumFormProps) => {
                 <FormField
                     name='cover'
                     control={control}
-                    defaultValue={DEFAULT_VALUES.cover}
+                    defaultValue={defaultValues?.cover}
                     render={({
                         field,
                     }: ControllerRenderProps<CreateAlbumValues, 'cover'>) => {
-                        const { value: _, onChange, ...rest } = field;
+                        // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
+                        const { value, onChange, ...rest } = field;
                         return (
                             <FormItem>
                                 <FormLabel htmlFor='cover'>Cover</FormLabel>
@@ -150,6 +123,7 @@ const CreateAlbumForm = ({ formId, onSubmit }: CreateAlbumFormProps) => {
                                     />
                                 </FormControl>
                                 <FormErrorMessage error={errors.cover} />
+                                <Progress value={progress} />
                             </FormItem>
                         );
                     }}
