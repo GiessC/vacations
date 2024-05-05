@@ -39,3 +39,22 @@ func (repository AlbumRepository) GetAlbumsByUserId(context context.Context) ([]
 	}
 	return newAlbum, nil
 }
+
+func (repository AlbumRepository) FindAlbumByIdAndSlug(context context.Context, albumId string, albumSlug string) (*domain.Album, error) {
+	newAlbum, err := repository.dbProvider.FindAlbumByIdAndSlug(context, albumId, albumSlug)
+	if err != nil {
+		return nil, err
+	}
+	return newAlbum, nil
+}
+
+func (repository AlbumRepository) AlbumExists(context context.Context, albumId string, albumSlug string) (bool, error) {
+	newAlbum, err := repository.dbProvider.FindAlbumByIdAndSlug(context, albumId, albumSlug)
+	if err != nil {
+		return false, err
+	}
+	if newAlbum == nil {
+		return false, nil
+	}
+	return true, nil
+}

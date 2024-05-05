@@ -13,6 +13,8 @@ export const getAlbums = async (
 
 export interface GetAlbumCoverUrlResponse {
     presignedUrl: string;
+    method: string;
+    signedHeader: string;
 }
 
 export const getAlbumCoverUrl = async (
@@ -21,7 +23,7 @@ export const getAlbumCoverUrl = async (
 ): Promise<GetAlbumCoverUrlResponse | undefined> => {
     const response = await getApi<GetAlbumCoverUrlResponse>(
         context,
-        `${path}/${album.albumId}/cover`,
+        `${path}/${album.albumSlug}/${album.albumId}/cover`,
         {
             fileExtension: album.coverFileExtension,
         },
@@ -32,6 +34,7 @@ export const getAlbumCoverUrl = async (
 export interface CreateAlbumRequest {
     name: string;
     description?: string;
+    location: string;
     attendees: string[];
     coverFileExtension?: string;
 }
@@ -51,6 +54,8 @@ export interface PutUploadCoverUrlRequest {
 
 export interface PutUploadCoverUrlResponse {
     presignedUrl: string;
+    method: string;
+    signedHeader: string;
 }
 
 export const putUploadCoverUrl = async (

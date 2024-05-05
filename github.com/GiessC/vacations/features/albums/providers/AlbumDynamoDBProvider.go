@@ -11,6 +11,7 @@ import (
 	"github.com/giessc/vacations/features/albums/domain"
 	"github.com/giessc/vacations/features/albums/dto"
 	"github.com/giessc/vacations/features/albums/mapping"
+	"github.com/giessc/vacations/features/auth"
 	"github.com/giessc/vacations/helpers"
 	"github.com/giessc/vacations/startup/config"
 	"github.com/google/uuid"
@@ -60,10 +61,31 @@ func (provider AlbumDynamoDBProvider) GetAlbumsByUserId(context context.Context,
 
 	albums := make([]domain.Album, 0)
 	for _, item := range queryOutput.Items {
-		log.Printf("Item: %+v", item)
 		albumDto := helpers.MapFromDynamoDB[dto.AlbumDynamoDBDto](item)
 		album := mapping.MapDynamoDBDtoToAlbum(*albumDto)
 		albums = append(albums, album)
 	}
 	return albums, nil
+}
+
+func (provider AlbumDynamoDBProvider) FindAlbumByIdAndSlug(context context.Context, albumId string, albumSlug string) (*domain.Album, error) {
+	userId := auth.GetCurrentUser(context).ID
+	log.Printf("pk: %s, sk: %s", dto.GetAlbumDtoPk(userId.String()), dto.GetAlbumDtoSk(albumId, albumSlug))
+	getItemRequest := dynamodb.GetItemInput{
+		TableName: aws.String(config.AppConfig.MetadataTableName),
+		Key: map[string]types.AttributeValue{
+			"pk": &types.AttributeValueMemberS{Value: dto.GetAlbumDtoPk(userId.String())},
+			"sk": &types.AttributeValueMemberS{Value: dto.GetAlbumDtoSk(albumId, albumSlug)},
+		},
+	}
+	getItemOutput, err := provider.dbClient.GetItem(context, &getItemRequest)
+	if err != nil {
+		return nil, err
+	}
+	if len(getItemOutput.Item) == 0 {
+		return nil, errors.New("album not found")
+	}
+	albumDto := helpers.MapFromDynamoDB[dto.AlbumDynamoDBDto](getItemOutput.Item)
+	album := mapping.MapDynamoDBDtoToAlbum(*albumDto)
+	return &album, nil
 }

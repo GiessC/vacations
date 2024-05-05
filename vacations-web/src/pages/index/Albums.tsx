@@ -13,7 +13,12 @@ export interface AlbumsProps {
     isLoading?: boolean;
 }
 
-const Albums = ({ className = '', albums, error, isLoading }: AlbumsProps) => {
+const Albums = ({
+    className = '',
+    albums,
+    error,
+    isLoading = false,
+}: AlbumsProps) => {
     const { showAlert } = useContext(AlertContext);
 
     useEffect(() => {
@@ -27,6 +32,8 @@ const Albums = ({ className = '', albums, error, isLoading }: AlbumsProps) => {
         }
     }, [error, showAlert]);
 
+    console.log(albums);
+
     return (
         <div className={`flex flex-col ${className} min-h-full`}>
             <div className='flex space-x-4'>
@@ -35,21 +42,28 @@ const Albums = ({ className = '', albums, error, isLoading }: AlbumsProps) => {
             </div>
             {isLoading && (
                 <Loading
-                    isLoading={isLoading}
+                    isLoading={isLoading && !error}
                     ariaLabel='Loading albums'
                 >
-                    Test
+                    {albums.length === 0 && (
+                        <Typography variant='p'>No albums found.</Typography>
+                    )}
                 </Loading>
             )}
-            {!isLoading && albums.length === 0 && (
-                <Typography variant='p'>No albums found.</Typography>
+            <div className='flex flex-col pt-2 space-x-4'></div>
+            <div>
+                {albums.map((album: IAlbum) => (
+                    <AlbumCard
+                        key={album.albumId}
+                        album={album}
+                    />
+                ))}
+            </div>
+            {error && (
+                <Typography variant='p'>
+                    An error occurred while loading albums.
+                </Typography>
             )}
-            {albums.map((album: IAlbum) => (
-                <AlbumCard
-                    key={album.albumId}
-                    album={album}
-                />
-            ))}
         </div>
     );
 };

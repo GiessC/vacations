@@ -81,6 +81,30 @@ const CreateAlbumForm = ({
                     }}
                 />
                 <FormField
+                    name='location'
+                    control={control}
+                    defaultValue={defaultValues?.location}
+                    render={({
+                        field,
+                    }: ControllerRenderProps<
+                        CreateAlbumValues,
+                        'location'
+                    >) => {
+                        return (
+                            <FormItem>
+                                <FormLabel>Location</FormLabel>
+                                <FormControl>
+                                    <Input
+                                        placeholder='Location'
+                                        {...field}
+                                    />
+                                </FormControl>
+                                <FormErrorMessage error={errors.location} />
+                            </FormItem>
+                        );
+                    }}
+                />
+                <FormField
                     name='attendees'
                     control={control}
                     render={({

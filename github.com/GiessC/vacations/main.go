@@ -31,6 +31,7 @@ func main() {
 	startup.AddAwsServices(*container, cfg)
 	startup.AddRepositories(*container)
 	startup.AddProviders(*container)
+	startup.AddServices(*container)
 
 	startup.RegisterApi(container)
 }

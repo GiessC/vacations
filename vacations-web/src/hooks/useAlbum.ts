@@ -21,6 +21,7 @@ export const useAlbumCoverUrl = (context: IAuthContext, album: IAlbum) => {
     return useQuery({
         queryKey: ['albumCoverUrl', context, album],
         queryFn: () => getAlbumCoverUrl(context, album),
+        enabled: !!album.coverFileExtension,
     });
 };
 

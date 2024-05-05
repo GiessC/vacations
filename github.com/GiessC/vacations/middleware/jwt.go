@@ -29,7 +29,6 @@ func decodeToken(tokenString string) (*jwt.Token, *models.UserClaims) {
 		}
 
 		key, foundKeys := config.AppConfig.PublicKeySet.LookupKeyID(kid)
-		fmt.Printf("key: %s", key.KeyID())
 		if !foundKeys {
 			return nil, fmt.Errorf("key %v not found", kid)
 		}

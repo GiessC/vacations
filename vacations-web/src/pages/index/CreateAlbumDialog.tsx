@@ -22,10 +22,19 @@ import { defaultFormConfig } from '@/helpers/forms/defaultFormConfig';
 const FORM_ID = 'create-album-form';
 
 const schema = z.object({
-    name: z.string().min(1, { message: 'Name is required.' }),
-    description: z.string().optional(),
+    name: z
+        .string({ required_error: 'Name is required.' })
+        .min(1, { message: 'Name is required.' }),
+    description: z
+        .string({ required_error: 'Description is required.' })
+        .optional(),
+    location: z
+        .string({ required_error: 'Location is required.' })
+        .min(1, { message: 'Location is required.' }),
     attendees: z
-        .array(z.string())
+        .array(z.string(), {
+            required_error: 'At least one attendee is required.',
+        })
         .min(1, { message: 'At least one attendee is required.' })
         .refine(
             (attendees: string[]) => {
@@ -43,6 +52,7 @@ export type CreateAlbumValues = z.infer<typeof schema>;
 const DEFAULT_VALUES: CreateAlbumValues = {
     name: '',
     description: '',
+    location: '',
     attendees: [''],
     cover: null,
 };
@@ -50,6 +60,7 @@ const DEFAULT_VALUES: CreateAlbumValues = {
 const convertToRequest = (values: CreateAlbumValues): CreateAlbumRequest => ({
     name: values.name,
     description: values.description,
+    location: values.location,
     attendees: values.attendees,
     coverFileExtension: values.cover?.name.split('.').pop() ?? undefined,
 });
