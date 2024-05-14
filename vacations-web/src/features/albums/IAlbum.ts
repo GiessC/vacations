@@ -6,4 +6,5 @@ export default interface IAlbum {
     location: string;
     attendeeNames: string[];
     coverFileExtension?: string;
+    imageIds: string[];
 }

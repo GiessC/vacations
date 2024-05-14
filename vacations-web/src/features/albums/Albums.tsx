@@ -1,10 +1,11 @@
 import AlbumCard from '@/components/albums/AlbumCard';
 import Typography from '@/components/common/typography/Typography';
 import IAlbum from '@/features/albums/IAlbum';
-import CreateAlbumDialog from './CreateAlbumDialog';
+import CreateAlbumDialog from '../../pages/index/CreateAlbumDialog';
 import { useContext, useEffect } from 'react';
 import AlertContext from '@/context/AlertContext';
 import Loading from '@/components/common/loadingIndicator/Loading';
+import Grid from '@mui/material/Unstable_Grid2';
 
 export interface AlbumsProps {
     className?: string;
@@ -32,8 +33,6 @@ const Albums = ({
         }
     }, [error, showAlert]);
 
-    console.log(albums);
-
     return (
         <div className={`flex flex-col ${className} min-h-full`}>
             <div className='flex space-x-4'>
@@ -50,15 +49,27 @@ const Albums = ({
                     )}
                 </Loading>
             )}
-            <div className='flex flex-col pt-2 space-x-4'></div>
-            <div>
+            <Grid
+                className='pt-4'
+                container
+                spacing={2}
+            >
                 {albums.map((album: IAlbum) => (
-                    <AlbumCard
+                    <Grid
+                        xs={12}
+                        sm={6}
+                        lg={4}
+                        xl={3}
                         key={album.albumId}
-                        album={album}
-                    />
+                    >
+                        <AlbumCard
+                            key={album.albumId}
+                            className='w-full h-full'
+                            album={album}
+                        />
+                    </Grid>
                 ))}
-            </div>
+            </Grid>
             {error && (
                 <Typography variant='p'>
                     An error occurred while loading albums.

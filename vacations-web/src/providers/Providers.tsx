@@ -1,8 +1,8 @@
-import { type PropsWithChildren } from 'react';
 import AlertProvider from './AlertProvider';
-import AuthProvider from './AuthProvider';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
+import { PropsWithChildren } from 'react';
+import AuthProvider from './AuthProvider';
 
 const ignoreCodes = [400, 403, 404];
 
@@ -28,13 +28,11 @@ const getQueryClient = () => {
 
 const Providers = ({ children }: PropsWithChildren) => {
     return (
-        <AuthProvider>
+        <QueryClientProvider client={getQueryClient()}>
             <AlertProvider>
-                <QueryClientProvider client={getQueryClient()}>
-                    {children}
-                </QueryClientProvider>
+                <AuthProvider>{children}</AuthProvider>
             </AlertProvider>
-        </AuthProvider>
+        </QueryClientProvider>
     );
 };
 

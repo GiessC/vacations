@@ -18,15 +18,10 @@ import AuthContext from '@/context/AuthContext';
 import { cn } from '@/lib/utils';
 import React, { useContext } from 'react';
 import { BsPersonCircle as AvatarIcon } from 'react-icons/bs';
-import { useLocation, useNavigate } from 'react-router-dom';
-
-const getLink = (currentLocation: string, href: string) => {
-    return currentLocation === href ? '#' : href;
-};
+import { useNavigate } from 'react-router-dom';
 
 const Navbar = () => {
-    const { user, logout } = useContext(AuthContext);
-    const location = useLocation();
+    const { userAuth: user, signOut: logout } = useContext(AuthContext);
     const navigate = useNavigate();
 
     const onLogout = async () => {
@@ -56,7 +51,7 @@ const Navbar = () => {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent>
                             <DropdownMenuLabel>
-                                {user.getUsername()}
+                                {user.username}
                             </DropdownMenuLabel>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem>

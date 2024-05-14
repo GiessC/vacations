@@ -27,6 +27,7 @@ type AlbumDynamoDBDto struct {
 	Location           string   `dynamodbav:"location"`
 	AttendeeNames      []string `dynamodbav:"attendeeNames,stringset"`
 	CoverFileExtension string   `dynamodbav:"coverFileExtension"`
+	ImageIds           []string `dynamodbav:"imageIds,stringset"`
 	CreatedAt          string   `dynamodbav:"createdAt"`
 	UpdatedAt          string   `dynamodbav:"updatedAt"`
 }
@@ -54,6 +55,7 @@ func NewAlbumDynamoDBDto(albumId uuid.UUID, userId uuid.UUID, name string, descr
 		Description:   description,
 		Location:      location,
 		AttendeeNames: attendeeNames,
+		ImageIds:      []string{},
 		CreatedAt:     time.Now().UTC().String(),
 		UpdatedAt:     time.Now().UTC().String(),
 	}

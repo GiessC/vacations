@@ -6,6 +6,7 @@ import AuthContext from '@/context/AuthContext';
 import { useAlbumCoverUrl } from '@/hooks/useAlbum';
 import AlertContext from '@/context/AlertContext';
 import { Badge } from '../ui/badge';
+import { Link } from 'react-router-dom';
 
 export interface AlbumCardProps {
     className?: string;
@@ -62,11 +63,10 @@ const AlbumCard = ({ className = '', album }: AlbumCardProps) => {
         <Card
             className={`w-1/3 bg-white shadow-md rounded-lg overflow-hidden transition-all ease-in-out duration-300 hover:shadow-xl ${className}`}
         >
-            <a
-                className='text-inherit no-underline'
-                href={getAlbumPath(album)}
+            <Link
+                className='text-inherit no-underline block h-full w-full'
+                to={getAlbumPath(album)}
                 rel='noopener noreferrer'
-                target='_blank'
             >
                 <CardContent className='flex flex-col items-center gap-4 p-6'>
                     <div className='flex flex-row space-x-2'>
@@ -93,7 +93,7 @@ const AlbumCard = ({ className = '', album }: AlbumCardProps) => {
                         )}
                     </div>
                 </CardContent>
-            </a>
+            </Link>
         </Card>
     );
 };

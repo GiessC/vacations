@@ -1,24 +1,28 @@
-import type {
-    ChangePasswordRequest,
-    LoginRequest,
-} from '@/providers/AuthProvider';
-import { CognitoUser } from 'amazon-cognito-identity-js';
+import { UserAuth } from '@/providers/AuthProvider';
 import { createContext } from 'react';
 
 export interface IAuthContext {
-    user: CognitoUser | null;
+    userAuth: UserAuth | null;
     isValidating: boolean;
-    login: (_request: LoginRequest) => Promise<void>;
-    changePassword: (_request: ChangePasswordRequest) => Promise<void>;
-    logout: () => Promise<void>;
+    isAuthenticated: boolean;
+    signIn: (_password: string, _newPassword: string) => Promise<void>;
+    signOut: () => Promise<void>;
+    confirmNewPassword: (_newPassword: string) => Promise<void>;
 }
 
 const DEFAULT_AUTH_CONTEXT: IAuthContext = {
-    user: null,
+    userAuth: null,
     isValidating: true,
-    login: (_request: LoginRequest) => Promise.resolve(),
-    changePassword: (_request: ChangePasswordRequest) => Promise.resolve(),
-    logout: () => Promise.resolve(),
+    isAuthenticated: false,
+    signIn: (_password: string, _newPassword: string) => {
+        throw new Error('AuthProvider not initialized.');
+    },
+    signOut: () => {
+        throw new Error('AuthProvider not initialized.');
+    },
+    confirmNewPassword: (_newPassword: string) => {
+        throw new Error('AuthProvider not initialized.');
+    },
 };
 
 const AuthContext = createContext<IAuthContext>(DEFAULT_AUTH_CONTEXT);

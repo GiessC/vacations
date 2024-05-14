@@ -4,11 +4,21 @@ import { getApi, postApi, putApi } from '@/helpers/api/apiMethods';
 
 const path = '/albums';
 
-export const getAlbums = async (
+export const getAlbum = async (
     context: IAuthContext,
-): Promise<IAlbum[] | undefined> => {
+    albumId: string,
+    albumSlug: string,
+): Promise<IAlbum | null> => {
+    const response = await getApi<IAlbum>(
+        context,
+        `${path}/${albumSlug}/${albumId}`,
+    );
+    return response?.data?.item ?? null;
+};
+
+export const getAlbums = async (context: IAuthContext): Promise<IAlbum[]> => {
     const response = await getApi<IAlbum>(context, path);
-    return response?.data?.items;
+    return response?.data?.items ?? [];
 };
 
 export interface GetAlbumCoverUrlResponse {
@@ -20,7 +30,7 @@ export interface GetAlbumCoverUrlResponse {
 export const getAlbumCoverUrl = async (
     context: IAuthContext,
     album: IAlbum,
-): Promise<GetAlbumCoverUrlResponse | undefined> => {
+): Promise<GetAlbumCoverUrlResponse | null> => {
     const response = await getApi<GetAlbumCoverUrlResponse>(
         context,
         `${path}/${album.albumSlug}/${album.albumId}/cover`,
@@ -28,7 +38,7 @@ export const getAlbumCoverUrl = async (
             fileExtension: album.coverFileExtension,
         },
     );
-    return response?.data?.item;
+    return response?.data?.item ?? null;
 };
 
 export interface CreateAlbumRequest {
@@ -42,9 +52,9 @@ export interface CreateAlbumRequest {
 export const createAlbum = async (
     context: IAuthContext,
     request: CreateAlbumRequest,
-): Promise<IAlbum | undefined> => {
+): Promise<IAlbum | null> => {
     const response = await postApi<IAlbum>(context, path, request);
-    return response?.data?.item;
+    return response?.data?.item ?? null;
 };
 
 export interface PutUploadCoverUrlRequest {
@@ -61,11 +71,11 @@ export interface PutUploadCoverUrlResponse {
 export const putUploadCoverUrl = async (
     context: IAuthContext,
     { albumId, ...request }: PutUploadCoverUrlRequest,
-): Promise<PutUploadCoverUrlResponse | undefined> => {
+): Promise<PutUploadCoverUrlResponse | null> => {
     const response = await putApi<PutUploadCoverUrlResponse>(
         context,
         `${path}/${albumId}/cover`,
         request,
     );
-    return response?.data?.item;
+    return response?.data?.item ?? null;
 };

@@ -1,13 +1,17 @@
-import { LoginRequest } from '../../../providers/AuthProvider';
-
 export default class NewPasswordRequiredChallenge {
-    private readonly _loginRequest: LoginRequest;
+    private readonly _username: string;
+    private readonly _password: string;
 
-    constructor(loginRequest: LoginRequest) {
-        this._loginRequest = loginRequest;
+    constructor(username: string, password: string) {
+        this._username = username;
+        this._password = password;
     }
 
-    public get loginRequest(): LoginRequest {
-        return this._loginRequest;
+    get username(): string {
+        return this._username;
+    }
+
+    get password(): string {
+        return this._password;
     }
 }

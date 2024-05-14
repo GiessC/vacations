@@ -20,5 +20,6 @@ func RegisterApi(container *dig.Container) {
 	r.GET("/albums/:albumSlug/:albumId/cover", middleware.RequireAuth, withContainer(container, albums.GetUploadCoverUrl))
 	r.POST("/albums", middleware.RequireAuth, withContainer(container, albums.CreateAlbum))
 	r.GET("/albums", middleware.RequireAuth, withContainer(container, albums.GetAlbumsByUserId))
+	r.GET("/albums/:albumSlug/:albumId", middleware.RequireAuth, withContainer(container, albums.FindAlbumByIdAndSlug))
 	r.Run()
 }

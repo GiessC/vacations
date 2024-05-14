@@ -49,6 +49,7 @@ type Album struct {
 	Description        string    `json:"description"`
 	Location           string    `json:"location"`
 	AttendeeNames      []string  `json:"attendeeNames"`
+	ImageIds           []string  `json:"imageIds"`
 	CoverFileExtension string    `json:"coverFileExtension"`
 	CreatedAt          string    `json:"createdAt"`
 	UpdatedAt          string    `json:"updatedAt"`
@@ -63,6 +64,7 @@ func NewAlbum(userId uuid.UUID, name string, description string, location string
 		Description:   description,
 		Location:      location,
 		AttendeeNames: attendeeNames,
+		ImageIds:      []string{},
 	}
 
 	for _, opt := range opts {

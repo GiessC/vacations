@@ -16,7 +16,7 @@ const Home = () => {
             <HomeView
                 albums={albums ?? []}
                 error={albumsError}
-                isLoading={areAlbumsLoading}
+                isLoading={areAlbumsLoading && !albumsError}
             />
         </div>
     );

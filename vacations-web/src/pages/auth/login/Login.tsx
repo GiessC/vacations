@@ -9,22 +9,24 @@ import {
 import AlertContext from '@/context/AlertContext';
 import AuthContext from '@/context/AuthContext';
 import NewPasswordRequiredChallenge from '@/features/auth/challenges/NewPasswordRequiredChallenge';
+import RoutePath from '@/types/enums/RoutePath';
 import { useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const Login = () => {
-    const { login } = useContext(AuthContext);
+    const { signIn } = useContext(AuthContext);
     const { showAlert } = useContext(AlertContext);
-    const navigate = useNavigate();
+    const navigateTo = useNavigate();
 
     const onSubmit = async (formValues: LoginFormValues) => {
         try {
-            await login(formValues);
-            navigate('/');
+            await signIn(formValues.username, formValues.password);
+            navigateTo(RoutePath.ROOT);
         } catch (error: unknown) {
+            console.error(error);
             if (error instanceof NewPasswordRequiredChallenge) {
                 console.info('User must change password. Redirecting...');
-                navigate('/auth/change-password', {
+                navigateTo(RoutePath.CONFIRM_NEW_PASSWORD, {
                     state: {
                         loginRequest: formValues,
                     },
@@ -39,7 +41,6 @@ const Login = () => {
                 );
                 return;
             }
-            console.error(error);
             throw error;
         }
     };

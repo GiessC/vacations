@@ -5,20 +5,13 @@ import AuthContext from '@/context/AuthContext';
 import { useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const convertToRequest = ({ newPassword }: ChangePasswordFormValues) => {
-    return {
-        newPassword,
-    };
-};
-
-const ChangePassword = () => {
-    const { changePassword } = useContext(AuthContext);
+const ConfirmNewPassword = () => {
+    const { confirmNewPassword } = useContext(AuthContext);
     const navigate = useNavigate();
 
     const onSubmit = async (formValues: ChangePasswordFormValues) => {
         try {
-            const request = convertToRequest(formValues);
-            await changePassword(request);
+            await confirmNewPassword(formValues.newPassword);
             navigate('/');
         } catch (error: unknown) {
             console.error(error);
@@ -33,4 +26,4 @@ const ChangePassword = () => {
     );
 };
 
-export default ChangePassword;
+export default ConfirmNewPassword;

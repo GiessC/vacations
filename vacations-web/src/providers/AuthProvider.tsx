@@ -1,12 +1,13 @@
 import AuthContext, { IAuthContext } from '@/context/AuthContext';
+import NewPasswordRequiredChallenge from '@/features/auth/challenges/NewPasswordRequiredChallenge';
+import { Hub } from 'aws-amplify/utils';
 import {
-    AuthenticationDetails,
-    CognitoUser,
-    CognitoUserPool,
-    CognitoUserSession,
-    type IAuthenticationDetailsData,
-    type ICognitoUserData,
-} from 'amazon-cognito-identity-js';
+    type AuthTokens,
+    signIn as authSignIn,
+    signOut as authSignOut,
+    confirmSignIn,
+    fetchAuthSession,
+} from 'aws-amplify/auth';
 import {
     PropsWithChildren,
     useCallback,
@@ -14,197 +15,154 @@ import {
     useMemo,
     useState,
 } from 'react';
-import { useNavigate } from 'react-router-dom';
-import config from '../config/config';
-import NewPasswordRequiredChallenge from '../features/auth/challenges/NewPasswordRequiredChallenge';
+import LoadingIndicator from '@/components/common/loadingIndicator/LoadingIndicator';
 
-export interface LoginRequest {
-    username: string;
-    password: string;
-}
-
-export interface LoginResponse {
-    user: CognitoUser;
-    newPasswordRequired: boolean;
-    session?: CognitoUserSession;
-    userAttributes?: Record<string, string>;
-}
-
-const login = (
-    userPool: CognitoUserPool,
-    request: LoginRequest,
-): Promise<LoginResponse> => {
-    const { username, password } = request;
-    return new Promise((resolve, reject) => {
-        const userConfig: ICognitoUserData = {
-            Pool: userPool,
-            Username: username,
-        };
-        const user = new CognitoUser(userConfig);
-        const authenticationData: IAuthenticationDetailsData = {
-            Username: username,
-            Password: password,
-        };
-        const authenticationDetails = new AuthenticationDetails(
-            authenticationData,
-        );
-        user.authenticateUser(authenticationDetails, {
-            onSuccess: (session: CognitoUserSession) => {
-                resolve({ user, session, newPasswordRequired: false });
-            },
-            onFailure: (error: unknown) => {
-                reject(error);
-            },
-            newPasswordRequired: () => {
-                resolve({ user, newPasswordRequired: true });
-            },
-        });
-    });
-};
-
-export interface ChangePasswordRequest {
-    newPassword: string;
-}
-
-const changePassword = (
-    { newPassword }: ChangePasswordRequest,
-    user: CognitoUser | null,
-    userAttributes?: Record<string, string>,
-): Promise<void> => {
-    return new Promise((resolve, reject) => {
-        user?.completeNewPasswordChallenge(newPassword, userAttributes, {
-            onSuccess: () => {
-                resolve();
-            },
-            onFailure: (error: unknown) => {
-                reject(error);
-            },
-        });
-    });
-};
-
-const logout = (userPool: CognitoUserPool): Promise<void> => {
-    return new Promise((resolve) => {
-        const user = userPool.getCurrentUser();
-        if (user) {
-            user.globalSignOut({
-                onSuccess: () => {
-                    user.signOut();
-                    resolve();
-                },
-                onFailure: () => {
-                    user.signOut();
-                    resolve();
-                },
-            });
-        }
-        resolve();
-    });
+export type UserAuth = {
+    userId: string | undefined;
+    username: string | undefined;
+    tokens: AuthTokens | undefined;
 };
 
 const AuthProvider = ({ children }: PropsWithChildren) => {
-    const navigate = useNavigate();
-    const [user, setUser] = useState<CognitoUser | null>(null);
+    const [userAuth, setUserAuth] = useState<UserAuth | null>(null);
+    const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
     const [isValidating, setIsValidating] = useState<boolean>(true);
 
-    const userPool = useMemo<CognitoUserPool>(() => {
-        if (config.userPoolId || config.clientId) {
-            return new CognitoUserPool({
-                UserPoolId: config.userPoolId,
-                ClientId: config.clientId,
-            });
+    const getUserAuth = useCallback(async (): Promise<UserAuth | undefined> => {
+        try {
+            const session = await getSession();
+            const user: UserAuth = {
+                userId: session?.userSub,
+                username: session?.tokens?.idToken?.payload?.[
+                    'cognito:username'
+                ] as string,
+                tokens: session?.tokens,
+            };
+            return user;
+        } catch (error) {
+            console.error(error);
         }
-        throw new Error('User pool ID and client ID are required.');
     }, []);
 
-    const contextValue = useMemo<IAuthContext>(() => {
-        return {
-            user,
-            isValidating,
-            login: async (request: LoginRequest) => {
-                const response = await login(userPool, request);
-                setUser(response.user);
-                if (response.newPasswordRequired) {
-                    throw new NewPasswordRequiredChallenge(request);
-                }
-            },
-            changePassword: (request: ChangePasswordRequest) =>
-                changePassword(request, user),
-            logout: async () => {
-                await logout(userPool);
-                setUser(null);
-            },
-        };
-    }, [isValidating, user, userPool]);
-
-    const isValidSession = useCallback(
-        (user: CognitoUser): Promise<boolean> => {
-            if (!user) return Promise.resolve(false);
-            return new Promise((resolve, reject) => {
-                user.getSession(
-                    (
-                        error: Error | null,
-                        session: CognitoUserSession | null,
-                    ) => {
-                        if (error) {
-                            reject(error);
-                            return;
-                        }
-                        if (!session) {
-                            resolve(false);
-                            return;
-                        }
-                        resolve(session.isValid());
-                    },
-                );
-            });
-        },
-        [],
-    );
-
-    const tryGetUser = useCallback(() => {
-        const user = userPool.getCurrentUser();
-        if (user) {
-            return user;
-        }
-        return null;
-    }, [userPool]);
-
-    const onUnauthenticated = useCallback(() => {
-        navigate('/auth/login');
-    }, [navigate]);
-
-    const onAuthenticated = useCallback(() => {
-        navigate('/');
-    }, [navigate]);
-
     useEffect(() => {
-        setIsValidating(true);
-
-        const validateSession = async () => {
-            const currentUser = user ?? tryGetUser();
-            if (!currentUser) {
-                onUnauthenticated();
-                return;
+        const removeHubListener = Hub.listen('auth', async ({ payload }) => {
+            const { event } = payload;
+            if (event === 'signedIn') {
+                const user = await getUserAuth();
+                setUserAuth(user ?? null);
+                setIsAuthenticated(true);
             }
-            const isValid = await isValidSession(currentUser);
-            setUser(currentUser);
-            if (!isValid) {
-                onUnauthenticated();
-                return;
+            if (event === 'signedOut') {
+                setUserAuth(null);
+                setIsAuthenticated(false);
             }
-            onAuthenticated();
-        };
-
-        validateSession().finally(() => {
             setIsValidating(false);
         });
-    }, [isValidSession, onAuthenticated, onUnauthenticated, tryGetUser, user]);
+
+        return () => {
+            removeHubListener();
+        };
+    }, [getUserAuth]);
+
+    useEffect(() => {
+        const verifySession = async () => {
+            try {
+                const session = await getUserAuth();
+                if (session) {
+                    setUserAuth(session);
+                    setIsAuthenticated(true);
+                } else {
+                    setIsAuthenticated(false);
+                }
+            } catch (error) {
+                console.error(error);
+                setIsAuthenticated(false);
+            } finally {
+                setIsValidating(false);
+            }
+        };
+
+        verifySession();
+    }, [getUserAuth]);
+
+    const signIn = useCallback(
+        async (username: string, password: string) => {
+            try {
+                const response = await authSignIn({
+                    username,
+                    password,
+                });
+                if (
+                    response.nextStep.signInStep ===
+                    'CONFIRM_SIGN_IN_WITH_NEW_PASSWORD_REQUIRED'
+                ) {
+                    throw new NewPasswordRequiredChallenge(username, password);
+                }
+                if (response.isSignedIn) {
+                    console.log('User signed in');
+                    const user = await getUserAuth();
+                    console.log('User:', user);
+                    setUserAuth(user ?? null);
+                }
+                setIsValidating(false);
+            } catch (error) {
+                console.error(error);
+            }
+        },
+        [getUserAuth],
+    );
+
+    const signOut = useCallback(async () => {
+        try {
+            await authSignOut({
+                global: true,
+            });
+        } catch (error) {
+            console.error(error);
+            await authSignOut();
+        }
+    }, []);
+
+    const confirmNewPassword = async (newPassword: string) => {
+        try {
+            await confirmSignIn({ challengeResponse: newPassword });
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    const getSession = async () => {
+        try {
+            return await fetchAuthSession({
+                forceRefresh: true,
+            });
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    const context = useMemo<IAuthContext>(
+        () => ({
+            userAuth,
+            isValidating,
+            isAuthenticated,
+            signIn,
+            signOut,
+            confirmNewPassword,
+        }),
+        [userAuth, isValidating, isAuthenticated, signIn, signOut],
+    );
+
+    if (isValidating) {
+        return (
+            <div className='w-full h-full flex justify-center'>
+                <LoadingIndicator className='m-auto w-24 h-24' />
+            </div>
+        );
+    }
 
     return (
-        <AuthContext.Provider value={contextValue}>
-            {isValidating ? <div>Validating session...</div> : children}
-        </AuthContext.Provider>
+        <AuthContext.Provider value={context}>{children}</AuthContext.Provider>
     );
 };
 

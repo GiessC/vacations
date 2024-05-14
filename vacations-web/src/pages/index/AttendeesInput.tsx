@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Trash2 as DeleteIcon } from 'lucide-react';
 import { ChangeEvent } from 'react';
 import { ControllerRenderProps } from 'react-hook-form';
-import { CreateAlbumValues } from './CreateAlbumForm';
+import { CreateAlbumValues } from './CreateAlbumDialog';
 
 export interface AttendeesInputProps
     extends ControllerRenderProps<CreateAlbumValues, 'attendees'> {
@@ -16,13 +16,15 @@ const AttendeeNameInput = ({ index, ...field }: AttendeesInputProps) => {
         const inputValue = event.target.value;
         const { value: attendeeNames, onChange } = field;
         onChange(
-            attendeeNames.map((name, i) => (i === index ? inputValue : name)),
+            attendeeNames.map((name: string, i: number) =>
+                i === index ? inputValue : name,
+            ),
         );
     };
 
     const handleDeleteAttendee = () => {
         const { value: attendeeNames, onChange } = field;
-        onChange(attendeeNames.filter((_, i) => i !== index));
+        onChange(attendeeNames.filter((_: string, i: number) => i !== index));
     };
 
     return (

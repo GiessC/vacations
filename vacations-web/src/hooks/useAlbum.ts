@@ -2,6 +2,7 @@ import {
     CreateAlbumRequest,
     PutUploadCoverUrlRequest,
     createAlbum,
+    getAlbum,
     getAlbumCoverUrl,
     getAlbums,
     putUploadCoverUrl,
@@ -14,6 +15,17 @@ export const useAlbums = (context: IAuthContext) => {
     return useQuery({
         queryKey: ['albums', context],
         queryFn: () => getAlbums(context),
+    });
+};
+
+export const useAlbum = (
+    context: IAuthContext,
+    albumId: string,
+    albumSlug: string,
+) => {
+    return useQuery({
+        queryKey: ['album', context, albumId, albumSlug],
+        queryFn: () => getAlbum(context, albumId, albumSlug),
     });
 };
 
