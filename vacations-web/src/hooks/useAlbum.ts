@@ -1,11 +1,11 @@
 import {
     CreateAlbumRequest,
-    PutUploadCoverUrlRequest,
+    GetUploadCoverUrlRequest,
     createAlbum,
     getAlbum,
     getAlbumCoverUrl,
     getAlbums,
-    putUploadCoverUrl,
+    getUploadCoverUrl,
 } from '@/api/albums/albums';
 import { IAuthContext } from '@/context/AuthContext';
 import IAlbum from '@/features/albums/IAlbum';
@@ -48,7 +48,7 @@ export const useCreateAlbum = (context: IAuthContext) => {
 export const useUploadCoverUrl = (context: IAuthContext) => {
     return useMutation({
         mutationKey: ['postUploadCoverUrl', context],
-        mutationFn: (request: PutUploadCoverUrlRequest) =>
-            putUploadCoverUrl(context, request),
+        mutationFn: (request: GetUploadCoverUrlRequest) =>
+            getUploadCoverUrl(context, request),
     });
 };

@@ -1,4 +1,5 @@
-import { getDefaultHeaders } from '@/helpers/api/apiMethods';
+import config from '@/config/config';
+import { getApi, getDefaultHeaders } from '@/helpers/api/apiMethods';
 import axios, { AxiosResponse } from 'axios';
 
 export interface UploadImageRequest {
@@ -22,4 +23,16 @@ export const uploadImage = async ({
             setUploadProgress?.(percentCompleted);
         },
     });
+};
+
+export interface GetUploadImagePresignedUrlRequest {
+    albumId: string;
+    albumSlug: string;
+}
+
+export const getUploadImagePresignedUrl = async ({
+    albumId,
+    albumSlug,
+}: GetUploadImagePresignedUrlRequest): Promise<string> => {
+    return await getApi();
 };

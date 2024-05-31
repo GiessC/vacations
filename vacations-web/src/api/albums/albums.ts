@@ -1,6 +1,6 @@
 import { IAuthContext } from '@/context/AuthContext';
 import IAlbum from '@/features/albums/IAlbum';
-import { getApi, postApi, putApi } from '@/helpers/api/apiMethods';
+import { getApi, postApi } from '@/helpers/api/apiMethods';
 
 const path = '/albums';
 
@@ -41,6 +41,30 @@ export const getAlbumCoverUrl = async (
     return response?.data?.item ?? null;
 };
 
+export interface GetUploadCoverUrlRequest {
+    albumId: string;
+    albumSlug: string;
+    fileExtension: string;
+}
+
+export interface GetUploadCoverUrlResponse {
+    presignedUrl: string;
+    method: string;
+    signedHeader: string;
+}
+
+export const getUploadCoverUrl = async (
+    context: IAuthContext,
+    { albumId, albumSlug, ...request }: GetUploadCoverUrlRequest,
+): Promise<GetUploadCoverUrlResponse | null> => {
+    const response = await getApi<GetUploadCoverUrlResponse>(
+        context,
+        `${path}/${albumSlug}/${albumId}/cover/upload`,
+        request,
+    );
+    return response?.data?.item ?? null;
+};
+
 export interface CreateAlbumRequest {
     name: string;
     description?: string;
@@ -54,28 +78,5 @@ export const createAlbum = async (
     request: CreateAlbumRequest,
 ): Promise<IAlbum | null> => {
     const response = await postApi<IAlbum>(context, path, request);
-    return response?.data?.item ?? null;
-};
-
-export interface PutUploadCoverUrlRequest {
-    albumId: string;
-    fileExtension: string;
-}
-
-export interface PutUploadCoverUrlResponse {
-    presignedUrl: string;
-    method: string;
-    signedHeader: string;
-}
-
-export const putUploadCoverUrl = async (
-    context: IAuthContext,
-    { albumId, ...request }: PutUploadCoverUrlRequest,
-): Promise<PutUploadCoverUrlResponse | null> => {
-    const response = await putApi<PutUploadCoverUrlResponse>(
-        context,
-        `${path}/${albumId}/cover`,
-        request,
-    );
     return response?.data?.item ?? null;
 };

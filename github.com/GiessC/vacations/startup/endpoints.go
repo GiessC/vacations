@@ -16,8 +16,8 @@ func withContainer(container *dig.Container, endpointFunction func(context *gin.
 func RegisterApi(container *dig.Container) {
 	r := gin.Default()
 	r.Use(middleware.CORSMiddleware())
-	r.PUT("/albums/:albumId/cover", middleware.RequireAuth, withContainer(container, albums.PutUploadCoverUrl))
-	r.GET("/albums/:albumSlug/:albumId/cover", middleware.RequireAuth, withContainer(container, albums.GetUploadCoverUrl))
+	r.GET("/albums/:albumSlug/:albumId/cover/upload", middleware.RequireAuth, withContainer(container, albums.GetUploadCoverUrl))
+	r.GET("/albums/:albumSlug/:albumId/cover", middleware.RequireAuth, withContainer(container, albums.GetCoverUrl))
 	r.POST("/albums", middleware.RequireAuth, withContainer(container, albums.CreateAlbum))
 	r.GET("/albums", middleware.RequireAuth, withContainer(container, albums.GetAlbumsByUserId))
 	r.GET("/albums/:albumSlug/:albumId", middleware.RequireAuth, withContainer(container, albums.FindAlbumByIdAndSlug))

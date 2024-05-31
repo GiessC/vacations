@@ -25,11 +25,28 @@ func NewAlbumService(s3Client *s3.Client, repository *repositories.AlbumReposito
 	}
 }
 
-func (service AlbumService) PutUploadCoverUrl(context context.Context, albumId string, fileExtension string) (string, error) {
+func (service AlbumService) GetUploadCoverUrl(context context.Context, albumId string, albumSlug string, fileExtension string) (string, error) {
 	presignClient := s3.NewPresignClient(service.s3Client, func(options *s3.PresignOptions) {
 		options.Expires = service.EXPIRATION_SECONDS
 	})
 	objectKey := fmt.Sprintf("albums/covers/%s.%s", albumId, fileExtension)
+	putObjectRequest := s3.PutObjectInput{
+		Bucket: &config.AppConfig.S3BucketName,
+		Key:    &objectKey,
+	}
+	presignedUrlResponse, err := presignClient.PresignPutObject(context, &putObjectRequest)
+	if err != nil {
+		log.Printf("Error presigning URL: %v", err)
+		return "", err
+	}
+	return presignedUrlResponse.URL, nil
+}
+
+func (service AlbumService) GetUploadAlbumImageUrl(context context.Context, albumId string, albumSlug string, fileName string, fileExtension string) (string, error) {
+	presignClient := s3.NewPresignClient(service.s3Client, func(options *s3.PresignOptions) {
+		options.Expires = service.EXPIRATION_SECONDS
+	})
+	objectKey := fmt.Sprintf("albums/pictures/%s/%s/%s.%s", albumSlug, albumId, fileName, fileExtension)
 	putObjectRequest := s3.PutObjectInput{
 		Bucket: &config.AppConfig.S3BucketName,
 		Key:    &objectKey,

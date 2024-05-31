@@ -1,5 +1,6 @@
 import { Card, CardContent } from '@/components/ui/card';
 import AuthContext from '@/context/AuthContext';
+import AlbumImageUploadForm from '@/features/albums/AlbumImageUploadForm';
 import AlbumInfo from '@/features/albums/AlbumInfo';
 import { useAlbum } from '@/hooks/useAlbum';
 import { useContext } from 'react';
@@ -29,6 +30,7 @@ const AlbumPage = ({ className = '' }: AlbumPageProps) => {
                         error={error}
                         isLoading={isLoading}
                     />
+                    <AlbumImageUploadForm />
                 </CardContent>
             </Card>
         </div>

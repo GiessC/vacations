@@ -89,12 +89,14 @@ const CreateAlbumDialog = () => {
                 );
                 return;
             }
-            if (!values.cover) {
+            const fileExtension = values.cover?.name.split('.').pop();
+            if (!values.cover || !fileExtension) {
                 return;
             }
             const urlResponse = await getUploadCoverUrl({
+                albumSlug: album.albumSlug,
                 albumId: album.albumId,
-                fileExtension: values.cover?.name.split('.').pop() ?? '',
+                fileExtension,
             });
             if (!urlResponse) {
                 showAlert(

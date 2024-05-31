@@ -1,6 +1,4 @@
 import Typography from '@/components/common/typography/Typography';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Suspense } from 'react';
 import IAlbum from './IAlbum';
 import AlbumImage from './AlbumImage';
 import LoadingIndicator from '@/components/common/loadingIndicator/LoadingIndicator';

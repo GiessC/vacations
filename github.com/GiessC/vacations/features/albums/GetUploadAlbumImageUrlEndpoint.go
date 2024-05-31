@@ -11,13 +11,20 @@ import (
 	"go.uber.org/dig"
 )
 
-type PutUploadCoverUrlRequest struct {
+type GetUploadAlbumImagesUrlRequest struct {
+	FileName      string
 	FileExtension string
 }
 
-func PutUploadCoverUrl(context *gin.Context, container *dig.Container) {
+type GetUploadAlbumImagesUrlResponse struct {
+	PresignedUrl string `json:"presignedUrl"`
+}
+
+// TODO: Validate so the request cannot have '.', '/', '\', '<', '>', ':', '"', '|', '?', or '*' in the filename and file extension
+func GetUploadAlbumImagesUrl(context *gin.Context, container *dig.Container) {
 	albumId := context.Params.ByName("albumId")
-	request := PutUploadCoverUrlRequest{}
+	albumSlug := context.Params.ByName("albumSlug")
+	request := GetUploadAlbumImagesUrlRequest{}
 
 	if err := context.ShouldBindWith(&request, binding.JSON); err != nil {
 		log.Printf("Error presigning URL: %v", err)
@@ -33,14 +40,14 @@ func PutUploadCoverUrl(context *gin.Context, container *dig.Container) {
 		helpers.SendResponse(http.StatusInternalServerError, "Internal Server Error", context, helpers.WithError("Internal Server Error"))
 		return
 	}
-	presignedUrl, err := albumService.PutUploadCoverUrl(context, albumId, request.FileExtension)
+	presignedUrl, err := albumService.GetUploadAlbumImageUrl(context, albumId, albumSlug, request.FileName, request.FileExtension)
 	if err != nil {
 		log.Printf("Error presigning URL: %v", err)
 		helpers.SendResponse(http.StatusInternalServerError, "Internal Server Error", context, helpers.WithError("Internal Server Error"))
 		return
 	}
 
-	helpers.SendResponse(http.StatusOK, "Success", context, helpers.WithItem(gin.H{
-		"presignedUrl": presignedUrl,
+	helpers.SendResponse(http.StatusOK, "Success", context, helpers.WithItem(GetUploadAlbumImagesUrlResponse{
+		PresignedUrl: presignedUrl,
 	}))
 }
