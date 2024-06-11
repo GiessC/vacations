@@ -30,7 +30,7 @@ const AlbumPage = ({ className = '' }: AlbumPageProps) => {
                         error={error}
                         isLoading={isLoading}
                     />
-                    <AlbumImageUploadForm />
+                    {album && <AlbumImageUploadForm album={album} />}
                 </CardContent>
             </Card>
         </div>

@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/giessc/vacations/errors/messages"
 	"github.com/giessc/vacations/features/albums/domain"
 	"github.com/giessc/vacations/features/albums/repositories"
 	"github.com/giessc/vacations/features/auth"
@@ -26,7 +27,7 @@ func CreateAlbum(context *gin.Context, container *dig.Container) {
 
 	if err := context.ShouldBindWith(&request, binding.JSON); err != nil {
 		log.Printf("Found invalid request: %v", err)
-		helpers.SendResponse(http.StatusBadRequest, "Bad Request", context, helpers.WithError(err.Error()))
+		helpers.SendResponse(http.StatusBadRequest, messages.BadRequest, context, helpers.WithError(messages.BadRequest))
 		return
 	}
 
@@ -35,21 +36,21 @@ func CreateAlbum(context *gin.Context, container *dig.Container) {
 		albumRepository = repository
 	}); err != nil {
 		log.Printf("Failed to invoke album repository: %v", err)
-		helpers.SendResponse(http.StatusInternalServerError, "Internal Server Error", context, helpers.WithError("Internal Server Error"))
+		helpers.SendResponse(http.StatusInternalServerError, messages.InternalError, context, helpers.WithError(messages.InternalError))
 		return
 	}
 
 	user := auth.GetCurrentUser(context)
 	if user == nil {
 		log.Println("Failed to get user from context")
-		helpers.SendResponse(http.StatusUnauthorized, "Unauthorized", context, helpers.WithError("Unauthorized"))
+		helpers.SendResponse(http.StatusUnauthorized, messages.Unauthorized, context, helpers.WithError(messages.Unauthorized))
 		return
 	}
 	album := domain.NewAlbum(user.ID, request.Name, request.Description, request.Location, request.Attendees, domain.WithCover(request.CoverFileExtension))
 	newAlbum, err := albumRepository.CreateAlbum(context, *album)
 	if err != nil {
 		log.Printf("Failed to create album: %v", err)
-		helpers.SendResponse(http.StatusInternalServerError, "Internal Server Error", context, helpers.WithError("Internal Server Error"))
+		helpers.SendResponse(http.StatusInternalServerError, messages.InternalError, context, helpers.WithError(messages.InternalError))
 		return
 	}
 

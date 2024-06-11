@@ -13,11 +13,12 @@ import { CreateAlbumRequest } from '@/api/albums/albums';
 import AuthContext from '@/context/AuthContext';
 import { useCreateAlbum, useUploadCoverUrl } from '@/hooks/useAlbum';
 import AlertContext from '@/context/AlertContext';
-import { uploadImage } from '@/api/images/images';
 import Button from '@/components/common/button/Button';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { defaultFormConfig } from '@/helpers/forms/defaultFormConfig';
+import { uploadImage } from '../../api/images/images';
+import { useImageUpload } from '@/hooks/useImage';
 
 const FORM_ID = 'create-album-form';
 
@@ -71,6 +72,7 @@ const CreateAlbumDialog = () => {
     const authContext = useContext(AuthContext);
     const { mutateAsync: getUploadCoverUrl } = useUploadCoverUrl(authContext);
     const { mutateAsync: createAlbum } = useCreateAlbum(authContext);
+    const { mutateAsync: uploadImage } = useImageUpload();
     const { showAlert } = useContext(AlertContext);
     const form = useForm<CreateAlbumValues>(
         defaultFormConfig<CreateAlbumValues>(schema, DEFAULT_VALUES),

@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/giessc/vacations/errors/messages"
 	"github.com/giessc/vacations/features/albums/services"
 	"github.com/giessc/vacations/helpers"
 	"github.com/gin-gonic/gin"
@@ -22,7 +23,7 @@ func GetUploadCoverUrl(context *gin.Context, container *dig.Container) {
 
 	if err := context.ShouldBindWith(&request, binding.JSON); err != nil {
 		log.Printf("Error presigning URL: %v", err)
-		helpers.SendResponse(http.StatusBadRequest, "Bad Request", context, helpers.WithError(err.Error()))
+		helpers.SendResponse(http.StatusBadRequest, messages.BadRequest, context, helpers.WithError(messages.BadRequest))
 		return
 	}
 
@@ -31,17 +32,17 @@ func GetUploadCoverUrl(context *gin.Context, container *dig.Container) {
 		albumService = service
 	}); err != nil {
 		log.Printf("Error presigning URL: %v", err)
-		helpers.SendResponse(http.StatusInternalServerError, "Internal Server Error", context, helpers.WithError("Internal Server Error"))
+		helpers.SendResponse(http.StatusInternalServerError, messages.InternalError, context, helpers.WithError(messages.InternalError))
 		return
 	}
 	presignedUrl, err := albumService.GetUploadCoverUrl(context, albumId, albumSlug, request.FileExtension)
 	if err != nil {
 		log.Printf("Error presigning URL: %v", err)
-		helpers.SendResponse(http.StatusInternalServerError, "Internal Server Error", context, helpers.WithError("Internal Server Error"))
+		helpers.SendResponse(http.StatusInternalServerError, messages.InternalError, context, helpers.WithError(messages.InternalError))
 		return
 	}
 
-	helpers.SendResponse(http.StatusOK, "Success", context, helpers.WithItem(gin.H{
+	helpers.SendResponse(http.StatusOK, messages.OK, context, helpers.WithItem(gin.H{
 		"presignedUrl": presignedUrl,
 	}))
 }

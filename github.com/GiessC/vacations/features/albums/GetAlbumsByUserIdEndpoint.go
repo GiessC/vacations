@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/giessc/vacations/errors/messages"
 	"github.com/giessc/vacations/features/albums/repositories"
 	"github.com/giessc/vacations/helpers"
 	"github.com/gin-gonic/gin"
@@ -16,13 +17,13 @@ func GetAlbumsByUserId(context *gin.Context, container *dig.Container) {
 		albumRepository = repository
 	}); err != nil {
 		log.Printf("Failed to invoke album repository: %v", err)
-		helpers.SendResponse(http.StatusInternalServerError, "Internal Server Error", context, helpers.WithError("Internal Server Error"))
+		helpers.SendResponse(http.StatusInternalServerError, messages.InternalError, context, helpers.WithError(messages.InternalError))
 		return
 	}
 	albums, err := albumRepository.GetAlbumsByUserId(context)
 	if err != nil {
 		log.Printf("Failed to get albums: %v", err)
-		helpers.SendResponse(http.StatusInternalServerError, "Internal Server Error", context, helpers.WithError("Internal Server Error"))
+		helpers.SendResponse(http.StatusInternalServerError, messages.InternalError, context, helpers.WithError(messages.InternalError))
 		return
 	}
 

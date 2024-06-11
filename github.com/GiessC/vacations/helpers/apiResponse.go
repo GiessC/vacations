@@ -1,6 +1,9 @@
 package helpers
 
-import "github.com/gin-gonic/gin"
+import (
+	"github.com/giessc/vacations/errors/messages"
+	"github.com/gin-gonic/gin"
+)
 
 type ApiResponse struct {
 	StatusCode int               `json:"statusCode"`
@@ -25,9 +28,9 @@ func WithItems(items interface{}) ApiResponseOption {
 	}
 }
 
-func WithError(err string) ApiResponseOption {
+func WithError(err messages.ApiErrorMessage) ApiResponseOption {
 	return func(r *ApiResponse) {
-		r.Error = err
+		r.Error = string(err)
 	}
 }
 
@@ -51,8 +54,8 @@ func NewApiResponse(statusCode int, message string, opts ...ApiResponseOption) A
 	return response
 }
 
-func SendResponse(statusCode int, message string, context *gin.Context, opts ...ApiResponseOption) {
-	response := NewApiResponse(statusCode, message, opts...)
+func SendResponse(statusCode int, message messages.ApiErrorMessage, context *gin.Context, opts ...ApiResponseOption) {
+	response := NewApiResponse(statusCode, string(message), opts...)
 	ginResponse := gin.H{
 		"statusCode": response.StatusCode,
 		"message":    response.Message,
